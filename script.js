@@ -3,15 +3,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const body = document.body;
     const menuIcon = document.getElementById('menu-icon');
     const navbar = document.querySelector('.navbar');
+    const navLinks = document.querySelectorAll('.navbar a');
+    const sections = document.querySelectorAll('section'); // Get all section elements
 
     // --- Theme Toggle Logic ---
     function setTheme(theme) {
         if (theme === 'light') {
             body.classList.add('light-mode');
-            themeToggleBtn.querySelector('i').className = 'bx bxs-moon'; // Change to moon icon for light mode
+            themeToggleBtn.querySelector('i').className = 'bx bxs-moon'; // Moon icon for light mode
         } else {
             body.classList.remove('light-mode');
-            themeToggleBtn.querySelector('i').className = 'bx bxs-sun'; // Change to sun icon for dark mode
+            themeToggleBtn.querySelector('i').className = 'bx bxs-sun'; // Sun icon for dark mode
         }
         localStorage.setItem('theme', theme); // Save preference
     }
@@ -43,12 +45,64 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Close mobile menu when a nav link is clicked
-    document.querySelectorAll('.navbar a').forEach(link => {
+    navLinks.forEach(link => {
         link.addEventListener('click', () => {
             menuIcon.classList.remove('bx-x');
             navbar.classList.remove('active');
         });
     });
+
+    // --- Smooth Scrolling & Active Navbar Link Logic ---
+    window.addEventListener('scroll', () => {
+        // Remove active class from all links first
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+        });
+
+        // Add active class to the link corresponding to the current section in view
+        sections.forEach(sec => {
+            let top = window.scrollY;
+            let offset = sec.offsetTop - 150; // Adjust offset as needed for header height
+            let height = sec.offsetHeight;
+            let id = sec.getAttribute('id');
+
+            if (top >= offset && top < offset + height) {
+                document.querySelector('.navbar a[href*=' + id + ']').classList.add('active');
+            }
+        });
+
+        // For the header shadow on scroll (optional, if you want it to appear only when scrolling)
+        // const header = document.querySelector('.header');
+        // if (window.scrollY > 50) {
+        //     header.classList.add('scrolled');
+        // } else {
+        //     header.classList.remove('scrolled');
+        // }
+    });
+
+    // --- Scroll Reveal Animation ---
+    // Intersection Observer for animating sections into view
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.2 // Trigger when 20% of the section is visible
+    };
+
+    const sectionObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('show-animate');
+                // observer.unobserve(entry.target); // Optional: uncomment if you want animation to run only once
+            } else {
+                // entry.target.classList.remove('show-animate'); // Optional: uncomment if you want animation to reset when scrolling away
+            }
+        });
+    }, observerOptions);
+
+    sections.forEach(section => {
+        sectionObserver.observe(section);
+    });
+
 
     // --- Current Year for Copyright ---
     const currentYearSpan = document.getElementById('current-year');
